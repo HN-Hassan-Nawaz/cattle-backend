@@ -37,8 +37,7 @@ app.use(async (req, res, next) => {
 });
 // ---------------------------------------------------------------------------
 
-// Health
-app.get('/health', (req, res) => res.json({ ok: true }));
+app.get('/', (req, res) => res.send('Hello....'));
 
 // Routes
 import UserRoutes from './routes/UserRoutes.js';
