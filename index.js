@@ -1,4 +1,3 @@
-// server/index.js
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -6,7 +5,8 @@ import ConnectDB from './db/ConnectDB.js';
 
 const app = express();
 
-// CORS: allow Expo Web origins (adjust if your web runs on a different port)
+// CORS: browsers only. Mobile fetches don’t send Origin.
+// Add your Vercel frontend domain once you deploy it.
 app.use(cors({
     origin: [
         'http://localhost:8081',
@@ -18,10 +18,19 @@ app.use(cors({
         'http://10.10.3.151:8000'
     ],
 
-
-
-    credentials: false, // set true only if you use cookies
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    credentials: false
 }));
+
+
+
+
+
+
+
+
+
+
 
 // Body parsers
 app.use(express.json({ limit: '100mb' }));
