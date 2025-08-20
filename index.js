@@ -20,11 +20,12 @@ import milkRoutes from './routes/MilkRoutes.js';
 
 
 // Routes
+app.get('/hello', (_req, res) => res.send('Hello....'));
+
 app.use('/api/users', UserRoutes);
 app.use('/api/cattle', cattleRoutes);
 app.use('/api/milk', milkRoutes);
 
-app.get('/', (_req, res) => res.send('Hello....'));
 
 
 const PORT = process.env.PORT || 5000;
