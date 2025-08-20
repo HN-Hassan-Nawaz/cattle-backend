@@ -8,12 +8,7 @@ const app = express();
 
 // CORS (add your web domain later if you deploy a web frontend)
 app.use(cors({
-    origin: [
-        'http://localhost:5173',
-        'http://localhost:8081',
-        'http://127.0.0.1:8081'
-        // 'https://your-frontend.vercel.app'
-    ],
+    origin: ['*'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
 }));
 
