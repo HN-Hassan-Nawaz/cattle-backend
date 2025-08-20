@@ -1,29 +1,23 @@
+// backend/db/ConnectDB.js
 import mongoose from 'mongoose';
 
-const ConnectDB = async () => {
-    const { MONGODB_URI, DB_NAME } = process.env;
+let cached = global.mongooseConn;
+if (!cached) cached = global.mongooseConn = { conn: null, promise: null };
 
-    if (!MONGODB_URI) throw new Error('MONGODB_URI is missing in .env');
-    if (!DB_NAME) throw new Error('DB_NAME is missing in .env');
+export default async function ConnectDB() {
+    if (cached.conn) return cached.conn;
 
-    await mongoose.connect(MONGODB_URI, { dbName: DB_NAME });
+    const uri = process.env.MONGODB_URI;
+    if (!uri) throw new Error('MONGODB_URI is not set');
 
-    mongoose.connection.on('connected', () => {
-        console.log(`✅ MongoDB connected (db: ${DB_NAME})`);
-    });
-    mongoose.connection.on('error', (err) => {
-        console.error('❌ MongoDB error:', err.message);
-    });
-    mongoose.connection.on('disconnected', () => {
-        console.warn('⚠️  MongoDB disconnected');
-    });
-};
-
-export default ConnectDB;
-
-// Optional: graceful shutdown
-process.on('SIGINT', async () => {
-    await mongoose.connection.close();
-    console.log('🔌 MongoDB connection closed');
-    process.exit(0);
-});
+    if (!cached.promise) {
+        cached.promise = mongoose.connect(uri, {
+            dbName: process.env.MONGODB_DB || undefined, // optional
+            bufferCommands: false,
+            maxPoolSize: 5,
+            serverSelectionTimeoutMS: 5000,
+        }).then((m) => m.connection);
+    }
+    cached.conn = await cached.promise;
+    return cached.conn;
+}
