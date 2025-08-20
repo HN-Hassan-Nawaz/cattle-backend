@@ -5,51 +5,38 @@ import ConnectDB from './db/ConnectDB.js';
 
 const app = express();
 
-// CORS (add your web domain later if you deploy a web frontend)
 app.use(cors({
     origin: ['*'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
 }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
-// one Mongo connection per lambda
-let dbReady;
-async function ensureDB() {
-    if (!dbReady) dbReady = ConnectDB();
-    return dbReady;
-}
-app.use(async (req, res, next) => {
-    try { await ensureDB(); next(); } catch (e) { next(e); }
-});
-
-// basic routes
-app.get('/', (_req, res) => res.send('Hello....'));
-app.get('/health', (_req, res) => res.json({ ok: true }));
-
-// your routes (be careful with filename **case**)
 import UserRoutes from './routes/UserRoutes.js';
-import CattleRoutes from './routes/CattleRoutes.js';
-import MilkRoutes from './routes/MilkRoutes.js';
+import cattleRoutes from './routes/CattleRoutes.js'
+import milkRoutes from './routes/MilkRoutes.js';
+
+
+
+// Routes
 app.use('/api/users', UserRoutes);
-app.use('/api/cattle', CattleRoutes);
-app.use('/api/milk', MilkRoutes);
+app.use('/api/cattle', cattleRoutes);
+app.use('/api/milk', milkRoutes);
 
-// error handler (shows stack in Vercel “Functions” logs)
-app.use((err, _req, res, _next) => {
-    console.error('Unhandled error:', err);
-    res.status(500).json({ error: 'Server error' });
-});
+app.get('/', (_req, res) => res.send('Hello....'));
 
-// export app for serverless
-export default app;
 
-// local dev only
-if (!process.env.VERCEL) {
-    const PORT = process.env.PORT || 5000;
-    (async () => {
-        try { await ensureDB(); app.listen(PORT, () => console.log(`http://localhost:${PORT}`)); }
-        catch (e) { console.error('Failed to start:', e); process.exit(1); }
-    })();
-}
+const PORT = process.env.PORT || 5000;
+
+(async () => {
+    try {
+        await ConnectDB();
+        app.listen(PORT, () => {
+            console.log(`🚀 Server running at http://localhost:${PORT}`);
+        });
+    } catch (err) {
+        console.error('❌ Failed to start server:', err.message);
+        process.exit(1);
+    }
+})();
