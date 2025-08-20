@@ -23,15 +23,6 @@ app.use(cors({
 }));
 
 
-
-
-
-
-
-
-
-
-
 // Body parsers
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
@@ -46,6 +37,8 @@ import milkRoutes from './routes/MilkRoutes.js';
 
 
 // Routes
+app.get('/health', (req, res) => res.json({ ok: true }));
+
 app.use('/api/users', UserRoutes);
 app.use('/api/cattle', cattleRoutes);
 app.use('/api/milk', milkRoutes);
