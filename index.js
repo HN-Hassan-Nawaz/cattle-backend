@@ -6,7 +6,7 @@ import ConnectDB from './db/ConnectDB.js';
 
 const app = express();
 
-// CORS: add your deployed frontend when ready
+// CORS (add your deployed frontend domain after you deploy it)
 app.use(cors({
     origin: [
         'http://localhost:8081',
@@ -15,26 +15,28 @@ app.use(cors({
         'http://127.0.0.1:19006',
         'http://192.168.0.103:8081',
         'http://10.10.3.151:8000',
-        // 'https://cattle-frontend.vercel.app', // uncomment after frontend deploy
+        // 'https://cattle-frontend.vercel.app' // uncomment after frontend is deployed
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    credentials: false,
 }));
 
-app.use(express.json({ limit: '10mb' }));
+// Body parsers
+app.use(express.json({ limit: '10mb' }));         // keep modest for serverless
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// ----- Ensure one DB connection per lambda (serverless-safe)
-let dbReady;
+// --- Ensure DB connection (cached) ------------------------------------------
+let dbReady; // Promise cache
 async function ensureDB() {
-    if (!dbReady) dbReady = ConnectDB(); // must be idempotent
+    if (!dbReady) dbReady = ConnectDB();  // your ConnectDB should be idempotent
     return dbReady;
 }
+// middleware to guarantee DB before routes
 app.use(async (req, res, next) => {
     try { await ensureDB(); next(); } catch (err) { next(err); }
 });
+// ---------------------------------------------------------------------------
 
-// Health & root
-app.get('/health', (req, res) => res.json({ ok: true }));
 app.get('/', (req, res) => res.send('Hello....'));
 
 // Routes
@@ -46,26 +48,21 @@ app.use('/api/users', UserRoutes);
 app.use('/api/cattle', cattleRoutes);
 app.use('/api/milk', milkRoutes);
 
-// Error handler (so you see the real problem in Vercel logs)
-app.use((err, req, res, next) => {
-    console.error('Unhandled error:', err);       // shows stack in Function logs
-    res.status(500).json({ error: 'Server error' });
-});
-
-// Export the app for Vercel
+// ---- Export the app (required by Vercel)
 export default app;
 
-// Local dev only (DON'T run on Vercel)
+// ---- Local dev only (DON'T run on Vercel)
 if (!process.env.VERCEL) {
     const PORT = process.env.PORT || 5000;
+    // Local: ensure DB then listen
     (async () => {
         try {
             await ensureDB();
-            app.listen(PORT, () =>
-                console.log(`🚀 Server running at http://localhost:${PORT}`)
-            );
+            app.listen(PORT, () => {
+                console.log(`🚀 Server running at http://localhost:${PORT}`);
+            });
         } catch (err) {
-            console.error('❌ Failed to start server:', err);
+            console.error('❌ Failed to start server:', err.message);
             process.exit(1);
         }
     })();
