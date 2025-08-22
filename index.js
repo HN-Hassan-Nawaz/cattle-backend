@@ -20,7 +20,8 @@ import milkRoutes from './routes/MilkRoutes.js';
 
 
 // Routes
-app.get('/hello', (_req, res) => res.send('Hello....'));
+app.get('/', (_req, res) => res.send('Hello This is Home Page....'));
+app.get('/hello', (_req, res) => res.send('Hello This is Hello Page....'));
 
 app.use('/api/users', UserRoutes);
 app.use('/api/cattle', cattleRoutes);
