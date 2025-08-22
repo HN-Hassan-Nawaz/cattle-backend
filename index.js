@@ -7,8 +7,21 @@ const app = express();
 
 app.use(cors({
     origin: ['*'],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    credentials: true
 }));
+
+
+// app.use(cors({
+//     origin: [
+//         'http://localhost:8081',      // Expo web (your screenshot)
+//         'http://10.10.3.151:8081',    // if you open via LAN IP
+//         'http://localhost:19006'      // Expo web default, if you use it
+//     ],
+//     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+//     credentials: true
+// }));
+
 
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));

@@ -1,5 +1,3 @@
-// routes/CattleRoutes.js (ESM)
-
 import { Router } from 'express';
 import { body, param } from 'express-validator';
 import { addCattle, getMyCattle, getCattleById, updateCattle, deleteCattle } from '../controllers/CattleController.js';
